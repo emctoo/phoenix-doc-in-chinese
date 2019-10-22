@@ -51,24 +51,44 @@ end
 
 `<%=` 和 `%>` 来自 Elixir [EEx](http://elixir-lang.org/docs/stable/eex/) 工程，他们把可执行的 Elixir 代码包裹在其中，`=` 符号告诉 EEx 输出出结果，如果不加 `=` 符号, EEx 依然会执行代码，只是不会将结果输出出来。在这个例子中，我们调用 `LayoutView` 中的 `title/0` 函数，然后将结果输出到模板的 title 标签 ( title tag ) 去中。
 
-由于我们使用了 `use HelloWeb, :view`, 我们还得到了额外的好处，因为 `view/0` 函数 imports 了`HelloWeb.Router.Helpers`, 我们就不用再在 templates 显式的引用 path helpers 了，我们改变一下 欢迎页面的 template 来看一个实际的例子。
+注意到我们其实没有给出 `title/0` 的完整路径 `HelloWeb.LayoutView`, 因为 LayoutView 完成了真正的渲染。事实上，Phoenix 中的“模板”只是视图模块上的一些函数。你可以试一下，先暂时删除掉 `lib/hello_web/templates/page/index.html.eex` 并在 `lib/hello_web/views/page_view.ex` 中的 `PageView` 上添加下面的函数。
+
+```elixir
+defmodule HelloWeb.PageView do
+  use HelloWeb, :view
+
+  def render("index.html", assigns) do
+    "rendering with assigns #{inspect Map.keys(assigns)}"
+  end
+end
+```
+
+现在如果你运行 `mix phx.server` 启动服务器，访问 `http://localhost:4000`, 应该可以看到布局中 header 下面的额主模板页面变成了如下文本:
+
+```html
+rendering with assigns [:conn, :view_module, :view_template]
+```
+
+相当利落吧？！在编译时(compile-time), Phoenix 会预编译所有的 `*.html.eex` 模板并转换成对应视图模块上的 `render/2` 函数。在运行时(runtime), 模板都是已经在到内存中的。没有读磁盘，没有复杂的文件缓存，也不需要任何的模板引擎。这也是为什么我们可以在 `LayoutView` 里面定义 `title/0` 函数，然后在布局 `app.html.eex` 中马上就可以用的原因 —— `title/0` 的调用只是一个本地的函数调用！
+
+由于我们使用了 `use HelloWeb, :view`, 我们还得到了额外的好处，`view/0` 函数给`HelloWeb.Router.Helpers` 取了个别名 `Routes` (参见 `lib/hello_web.ex`), 我们可以在模板中通过 `Routes.*_path` 调用这些辅助函数，我们改变一下欢迎页面的 template 来看一个实际的例子。
 
 我们打开 `lib/hello_web/templates/page/index.html.eex` 看一看。
 
 ```html
-<div class="jumbotron">
-  <h2>Welcome to Phoenix!</h2>
-  <p class="lead">A productive web framework that<br>does not compromise speed and maintainability.</p>
-</div>
+<section class="phx-hero">
+  <h1><%= gettext "Welcome to %{name}!", name: "Phoenix" %></h1>
+  <p>A productive web framework that<br/>does not compromise speed or maintainability.</p>
+</section>
 ```
 
 现在我们加一行超链接使其能返回同一页（这个功能没什么实际的意义，只是为了演示 path helpers 在 template 中是怎样工作的。）
 
 ```html
-<div class="jumbotron">
-  <h2>Welcome to Phoenix!</h2>
-  <p class="lead">A productive web framework that<br>does not compromise speed and maintainability.</p>
-  <p><a href="<%= page_path @conn, :index %>">Link back to this page</a></p>
+<section class="phx-hero">
+  <h1><%= gettext "Welcome to %{name}!", name: "Phoenix" %></h1>
+  <p>A productive web framework that<br/>does not compromise speed or maintainability.</p>
+  <p><a href="<%= Routes.page_path(@conn, :index) %>">Link back to this page</a></p>
 </div>
 ```
 
@@ -78,8 +98,9 @@ end
 <a href="/">Link back to this page</a>
 ```
 
-不错， `page_path/2` 按我们希望的被编译成了 `/`, 并且我们没有显式的引入 `Phoenix.View` (原文：and we
-didn't need to qualify it with `Phoenix.View`.)
+不错， `Routes.page_path/2` 按我们希望的被编译成了 `/`, 并且我们只需要使用 `Phoenix.View` 设定的别名就可以了。
+
+如果你需要在试图、控制器或者模板之外使用路径辅助函数，要么调用时候指明完整路径，比如 `HelloWeb.Router.Helpers.page_path(@conn, :index)`, 或者可以在调用模块中自己指定别名，定义 `alias HelloWeb.Router.Helpers, as: Routes`，然后再调用，比如 `Routes.page_path(@conn, :index)`。
 
 ### 关于视图的更多话题
 
