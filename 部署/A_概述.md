@@ -73,8 +73,8 @@ Brunch， 我们这里也使用 Brunch 。
 编译资源分为两步：
 
 ```console
-$ brunch build --production
-$ MIX_ENV=prod mix phoenix.digest
+$ npm run deploy --prefix ./assets
+$ mix phx.digest
 Check your digested files at "priv/static".
 ```
 
@@ -84,9 +84,9 @@ Check your digested files at "priv/static".
 要注意的是，如果你没有运行上面两个两步，Phoenix 会报错：
 
 ```console
-$ PORT=4001 MIX_ENV=prod mix phoenix.server
+$ PORT=4001 MIX_ENV=prod mix phx.server
 10:50:18.732 [info] Running MyApp.Endpoint with Cowboy on http://example.com
-10:50:18.735 [error] Could not find static manifest at "my_app/_build/prod/lib/foo/priv/static/manifest.json". Run "mix phoenix.digest" after building your static files or remove the configuration from "config/prod.exs".
+10:50:18.735 [error] Could not find static manifest at "my_app/_build/prod/lib/foo/priv/static/cache_manifest.json". Run "mix phx.digest" after building your static files or remove the configuration from "config/prod.exs".
 ```
 
 错误提示很清晰： Phoenix 没有找到静态 manifest 文件。你可以运行上面的命令来 fix 它，或者如果你的应用不关心静态
@@ -97,25 +97,23 @@ $ PORT=4001 MIX_ENV=prod mix phoenix.server
 我们可以设置 `PORT` 和 `MIX_ENV` 环境变量让 Phoenix 运行在生产环境下：
 
 ```console
-$ PORT=4001 MIX_ENV=prod mix phoenix.server
+$ PORT=4001 MIX_ENV=prod mix phx.server
 10:59:19.136 [info] Running MyApp.Endpoint with Cowboy on http://example.com
 ```
 
 如果出现了错误信息，确保你是按照文档做了，如果还不对，请报告一个 issue 。
 
-我们也可以在交互式 shell 中运行服务器：
+要想以 detached 模式运行以便在关闭终端之后应用不会退出：
 
 ```console
-$ PORT=4001 MIX_ENV=prod iex -S mix phoenix.server
-10:59:19.136 [info] Running MyApp.Endpoint with Cowboy on http://example.com
+$ PORT=4001 MIX_ENV=prod elixir --erl "-detached" -S mix phx.server
 ```
 
-或者你可以将其作为独立的 daemon 模式运行：
-(Or run it detached from the iex console. This effectively daemonizes the process so it can run
-independently in the background):
+你也可以用 iex 的发给你是启动:
 
 ```elixir
-MIX_ENV=prod PORT=4001 elixir --detached -S mix do compile, phoenix.server
+$ PORT=4001 MIX_ENV=prod iex -S mix phx.server
+10:59:19.136 [info] Running MyApp.Endpoint with Cowboy on http://example.com
 ```
 
 这种模式下即便我们关闭 shell 应用服务器依然在运行。
@@ -133,12 +131,13 @@ $ mix deps.get --only prod
 $ MIX_ENV=prod mix compile
 
 # Compile assets
-$ brunch build --production
-$ MIX_ENV=prod mix phoenix.digest
+$ npm run deploy --prefix ./assets
+$ mix phx.digest
 
 # Custom tasks (like DB migrations)
 $ MIX_ENV=prod mix ecto.migrate
 
 # Finally run the server
-$ PORT=4001 MIX_ENV=prod mix phoenix.server
+$ PORT=4001 MIX_ENV=prod mix phx.server
 ```
+就这些。接下来你可以了解一下如何用 Elixir 的 releases 来部署，以及如何在 Heroku 上部署。
