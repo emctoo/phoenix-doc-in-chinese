@@ -1,4 +1,3 @@
-
 # 视图
 
 Phoenix 视图 (views) 有两个主要的工作，第一个，也是最重要的一个是渲染 `模板(template)`, 这里用到的核心函数`render/3` 是由 `Phoenix.View` 定义的。另外, 视图 (View) 提供一些函数将原始数据转换成 视图(templates) 易于识别的格式 (原文: Views also provide functions which take raw data and make it easier for templatesto consume. ), 如果你熟悉装饰器或者 facade pattern (更好的翻译？), 你会发现这很类似。
@@ -109,6 +108,7 @@ rendering with assigns [:conn, :view_module, :view_template]
 `Phoenix.View` 通过这行 `use Phoenix.Template` 宏获得模板（template, 也就是 `Phoenix.Template` ）的提供的
 各种方便的方法，比如 -- 查找，抽象名字和路径等等。
 
+
 我们在 Phoenix 默认生成的 `lib/hello_web/views/page_view.ex` 文件中做个小实验，我们增加一个 `message/0` 函数，像这样：
 
 ```elixir
@@ -126,10 +126,10 @@ end
 ```html
 This is the message: <%= message %>
 ```
-这个模板并不对应我们 controller 中的任何 action, 但我们可以在交互式的 `iex` 中运行它，在项目根目录下，运行
-`iex -S mix`, 然后明确的渲染我们的模板。
 
-```console
+这个模板并不对应我们 controller 中的任何 action, 但我们可以在交互式的 `iex` 中运行它，在项目根目录下，运行`iex -S mix`, 然后明确的渲染我们的模板。
+
+```hello
 iex(1)> Phoenix.View.render(HelloWeb.PageView, "test.html", %{})
   {:safe, [["" | "This is the message: "] | "Hello from the view!"]}
 ```
@@ -150,8 +150,7 @@ This is the message: <%= message() %>
 
 注意上面那行中的 `@` 符号, 现在当我们改变函数调用，就会看到 `PageView` 模块渲染出了不同的结果。
 
-```console
-iex(2)> r HelloWeb.PageView
+```cohelloex(2)> r HelloWeb.PageView
 warning: redefining module HelloWeb.PageView (current version loaded from _build/dev/lib/hello_web/ebin/Elixir.HelloWeb.PageView.beam)
   lib/hello_web/views/page_view.ex:1
 
@@ -161,10 +160,11 @@ iex(3)> Phoenix.View.render(HelloWeb.PageView, "test.html", message: "Assigns ha
 {:safe,
   [[[["" | "I came from assigns: "] | "Assigns has an @."] |
   "\nThis is the message: "] | "Hello from the view!"]}
- ```
- 我们再测试一下 HTML 的转义, just for fun 。
+```
 
-```console
+我们再测试一下 HTML 的转义, just for fun 。
+
+```shell
 iex(4)> Phoenix.View.render(HelloWeb.PageView, "test.html", message: "<script>badThings();</script>")
 {:safe,
   [[[["" | "I came from assigns: "] |
@@ -174,11 +174,11 @@ iex(4)> Phoenix.View.render(HelloWeb.PageView, "test.html", message: "<script>ba
 
 如果我们只想得到字符串而不是整个元组，我们可以使用 `render_to_iodata/3`。
 
- ```console
+ ```shell
  iex(5)> Phoenix.View.render_to_iodata(HelloWeb.PageView, "test.html", message: "Assigns has an @.")
  [[[["" | "I came from assigns: "] | "Assigns has an @."] |
    "\nThis is the message: "] | "Hello from the view!"]
-  ```
+ ```
 
 ### 关于布局
 
@@ -189,8 +189,8 @@ iex(4)> Phoenix.View.render(HelloWeb.PageView, "test.html", message: "<script>ba
 ```html
 <%= render @view_module, @view_template, assigns %>
 ```
-这里就是模板渲染成字符串后被装进 Layout 的地方。
 
+这里就是模板渲染成字符串后被装进 Layout 的地方。
 
 ### 错误视图
 
